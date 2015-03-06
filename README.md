@@ -1,3 +1,24 @@
+## libnabo (indigo) - 1.0.6-0
+
+The packages in the `libnabo` repository were released into the `indigo` distro by running `/usr/bin/bloom-release --rosdistro indigo --track indigo libnabo --edit` on `Fri, 06 Mar 2015 22:05:59 -0000`
+
+The `libnabo` package was released.
+
+Version of package(s) in repository `libnabo`:
+- upstream repository: https://github.com/ethz-asl/libnabo.git
+- release repository: https://github.com/ethz-asl/libnabo-release.git
+- rosdistro version: `1.0.5-0`
+- old version: `1.0.5-0`
+- new version: `1.0.6-0`
+
+Versions of tools used:
+- bloom version: `0.5.19`
+- catkin_pkg version: `0.2.6`
+- rosdep version: `0.11.1`
+- rosdistro version: `0.4.0`
+- vcstools version: `0.1.36`
+
+
 ## libnabo (hydro) - 1.0.6-1
 
 The packages in the `libnabo` repository were released into the `hydro` distro by running `/usr/bin/bloom-release --rosdistro hydro --track hydro libnabo --edit` on `Fri, 06 Mar 2015 21:55:33 -0000`
