@@ -40,6 +40,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/numeric/conversion/bounds.hpp>
 #include <boost/limits.hpp>
 #include <boost/format.hpp>
+#ifdef HAVE_OPENMP
+#include <omp.h>
+#endif
 
 /*!	\file kdtree_cpu.cpp
 	\brief kd-tree search, cpu implementation
@@ -69,8 +72,8 @@ namespace Nabo
 		return 64;
 	}
 	
-	//! Return the index of the maximum value of a vector
-	/** \param v vector
+	//! Return the index of the maximum value of a vector of positive values
+	/** \param v vector of positive values
 	 * \return index of maximum value, 0 if the vector is empty
 	 */
 	template<typename T>
@@ -242,7 +245,7 @@ namespace Nabo
 			return;
 		}
 		
-		const uint64_t maxNodeCount((1 << (32-dimBitCount)) - 1);
+		const uint64_t maxNodeCount((0x1ULL << (32-dimBitCount)) - 1);
 		const uint64_t estimatedNodeCount(cloud.cols() / (bucketSize / 2));
 		if (estimatedNodeCount > maxNodeCount)
 		{
@@ -280,17 +283,24 @@ namespace Nabo
 		const bool collectStatistics(creationOptionFlags & NearestNeighbourSearch<T>::TOUCH_STATISTICS);
 		const T maxRadius2(maxRadius * maxRadius);
 		const T maxError2((1+epsilon)*(1+epsilon));
+		const int colCount(query.cols());
 		
 		assert(nodes.size() > 0);
+
+		IndexMatrix result(k, query.cols());
+		unsigned long leafTouchedCount(0);
+
+#pragma omp parallel 
+		{		
+
 		Heap heap(k);
 		std::vector<T> off(dim, 0);
-		
-		IndexMatrix result(k, query.cols());
-		const int colCount(query.cols());
-		unsigned long leafTouchedCount(0);
+
+#pragma omp for reduction(+:leafTouchedCount) schedule(guided,32)
 		for (int i = 0; i < colCount; ++i)
 		{
 			leafTouchedCount += onePointKnn(query, indices, dists2, i, heap, off, maxError2, maxRadius2, allowSelfMatch, collectStatistics, sortResults);
+		}
 		}
 		return leafTouchedCount;
 	}
@@ -304,19 +314,25 @@ namespace Nabo
 		const bool sortResults(optionFlags & NearestNeighbourSearch<T>::SORT_RESULTS);
 		const bool collectStatistics(creationOptionFlags & NearestNeighbourSearch<T>::TOUCH_STATISTICS);
 		const T maxError2((1+epsilon)*(1+epsilon));
+		const int colCount(query.cols());
 		
 		assert(nodes.size() > 0);
+		IndexMatrix result(k, query.cols());
+		unsigned long leafTouchedCount(0);
+
+#pragma omp parallel 
+		{		
+
 		Heap heap(k);
 		std::vector<T> off(dim, 0);
 		
-		IndexMatrix result(k, query.cols());
-		const int colCount(query.cols());
-		unsigned long leafTouchedCount(0);
+#pragma omp for reduction(+:leafTouchedCount) schedule(guided,32)
 		for (int i = 0; i < colCount; ++i)
 		{
 			const T maxRadius(maxRadii[i]);
 			const T maxRadius2(maxRadius * maxRadius);
 			leafTouchedCount += onePointKnn(query, indices, dists2, i, heap, off, maxError2, maxRadius2, allowSelfMatch, collectStatistics, sortResults);
+		}
 		}
 		return leafTouchedCount;
 	}
