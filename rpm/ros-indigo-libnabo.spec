@@ -7,7 +7,6 @@ Group:          Development/Libraries
 License:        BSD
 Source0:        %{name}-%{version}.tar.gz
 
-AutoProv:       0
 Requires:       boost-devel
 Requires:       eigen3-devel
 Requires:       ros-indigo-catkin
